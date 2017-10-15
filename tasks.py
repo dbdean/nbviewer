@@ -13,8 +13,8 @@ import pip
 
 import invoke
 
-NOTEBOOK_VERSION = '5.0.0' # the notebook version whose LESS we will use
-NOTEBOOK_CHECKSUM = '1cea3bbbd03c8e5842a1403347a8cc8134486b3ce081a2e5b1952a00ea66ed54' # sha256 checksum of notebook tarball
+NOTEBOOK_VERSION = '5.2.0' # the notebook version whose LESS we will use
+NOTEBOOK_CHECKSUM = '7fafcd1ae638bd70bca3621982a69ccdc47ea19b234694073b617f59e79403ea' # sha256 checksum of notebook tarball
 
 APP_ROOT = os.path.dirname(__file__)
 NPM_BIN = os.path.join(APP_ROOT, "node_modules", ".bin")
@@ -123,3 +123,17 @@ def screenshots(ctx, root="http://localhost:5000/", dest="./screenshots"):
     ctx.run("casperjs test {script}".format(script=tmpfile))
 
     shutil.rmtree(tmpdir)
+
+
+@invoke.task
+def sdist(ctx):
+    bower(ctx)
+    less(ctx)
+    ctx.run('python setup.py sdist')
+
+
+@invoke.task
+def release(ctx):
+    bower(ctx)
+    less(ctx)
+    ctx.run('python setup.py sdist bdist_wheel upload')

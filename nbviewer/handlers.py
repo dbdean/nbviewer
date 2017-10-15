@@ -17,7 +17,6 @@ from .providers.base import (
     BaseHandler,
     format_prefix,
 )
-from .providers.local import LocalFileHandler
 
 #-----------------------------------------------------------------------------
 # Handler classes
@@ -90,7 +89,7 @@ def format_handlers(formats, handlers):
 
 def init_handlers(formats, providers, base_url, localfiles):
     pre_providers = [
-        ('/', IndexHandler),
+        ('/?', IndexHandler),
         ('/index.html', IndexHandler),
         (r'/faq/?', FAQHandler),
         (r'/create/?', CreateHandler),
@@ -103,10 +102,13 @@ def init_handlers(formats, providers, base_url, localfiles):
         (r'/(robots\.txt|favicon\.ico)', web.StaticFileHandler)
     ]
 
-    handlers = provider_handlers(providers)
-
     # Add localfile handlers if the option is set
-    handlers = [(r'/localfile/?(.*)', LocalFileHandler)]+handlers if localfiles else handlers
+    if localfiles:
+        # Put local provider first as per the comment at
+        # https://github.com/jupyter/nbviewer/pull/727#discussion_r144448440.
+        providers.insert(0, 'nbviewer.providers.local')
+
+    handlers = provider_handlers(providers)
 
     raw_handlers = (
         pre_providers +
